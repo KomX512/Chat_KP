@@ -16,4 +16,5 @@ public class Logger {
             throw new IOException();
         }
     }
+
 }

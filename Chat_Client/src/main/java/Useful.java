@@ -4,7 +4,7 @@ import java.io.IOException;
 
 public class Useful {
 
-    public static String getSettingFromIni(String setName, String INI_FILE) {
+    public static String getSettingFromIni(String setName, String INI_FILE) throws IOException {
         //Делаем чтение настроек циклом, может потом еще настройки надо будет читать
         String settingString = "";
         String readyString = "";
@@ -17,7 +17,7 @@ public class Useful {
             }
             bufferedReader.close();
         } catch (IOException ex) {
-            System.out.println("Ошибка загрузки параметров!");
+            Logger.log("Ошибка загрузки параметров!", LogStatus.ERROR);
             System.out.println(ex.getMessage());
         }
 
