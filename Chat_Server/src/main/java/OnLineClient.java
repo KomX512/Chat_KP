@@ -23,12 +23,19 @@ public class OnLineClient implements Runnable {
 
     public String enterName() throws IOException {
         out.println("Давайте знакомиться \nКак вас зовут?");
-        return in.readLine();
+        String name = "";
+        while (true) {
+            name = in.readLine();
+            if (name == null || !name.equals("")){
+                break;
+            }
+        }
+        return name;
     }
 
-    public void sendPersonalMessage (String msg) throws IOException {
+    public void sendPersonalMessage(String msg) throws IOException {
         out.println(msg);
-        Logger.log(msg,LogStatus.SEND);
+        Logger.log(msg, LogStatus.SEND);
     }
 
     public static void closeConnection(String clientName, OnLineClient client) {

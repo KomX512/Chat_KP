@@ -8,7 +8,9 @@ public class Logger {
 
     public static void log(String message, LogStatus status) throws IOException {
         String msg = "[" + LocalDate.now() + "] (" + status + ") " + message;
-        System.out.println(msg);
+        if (status == LogStatus.ERROR) {
+            System.out.println(msg);
+        }
         try (BufferedWriter fileWriter = new BufferedWriter(new FileWriter(LOG_FILE, true))) {
             fileWriter.write(msg + "\n");
             fileWriter.flush();

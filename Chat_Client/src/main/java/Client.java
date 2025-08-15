@@ -4,11 +4,15 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.lang.ref.Cleaner;
 import java.net.Socket;
+import java.time.LocalDate;
+import java.util.Scanner;
 
 public class Client {
     private final String INI_FILE = "settings.ini";
     private final String PORT_STRING = "port:";
     private final String HOST_STRING = "host:";
+    // commands
+    private final String EXIT_COM = "/exit";
 
     public Client() {
 
@@ -44,15 +48,39 @@ public class Client {
         try (Socket clientSocket = new Socket(serverHost, port);
              PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
              BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))) {
-
-            while (true){
-                String resp = in.readLine();
-                System.out.println(resp);
-            }
+            Logger.log("Клиент в сети", LogStatus.INFO);
+            serverTrackingTread(in);
+            sendMessage(out);
 
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+    }
 
+    private void sendMessage(PrintWriter out) throws IOException {
+        String inputStr;
+        Scanner reader = new Scanner(System.in);
+        while ((inputStr = reader.nextLine()) != null) {
+            if (inputStr.equalsIgnoreCase(EXIT_COM)) {
+                break;
+            }
+            out.println(inputStr);
+            Logger.log(inputStr, LogStatus.SEND);
+        }
+    }
+
+    private void serverTrackingTread(BufferedReader in) {
+        new Thread(() -> {
+            try {
+                String serverMessage;
+                while ((serverMessage = in.readLine()) != null) {
+
+                    System.out.println("[" + LocalDate.now() + "] " + serverMessage);
+                    Logger.log(serverMessage, LogStatus.RECIEV);
+                }
+            } catch (IOException e) {
+                System.out.println("До свидания!");
+            }
+        }).start();
     }
 }

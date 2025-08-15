@@ -52,7 +52,7 @@ public class Server {
                         break;
                     }
                 }
-
+                System.out.println("Новый клиент " + clientName);
                 clients.put(clientName, newClient);
                 new Thread(newClient).start();
             }
