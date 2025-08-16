@@ -1,9 +1,7 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.lang.ref.Cleaner;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.Scanner;
 
@@ -46,8 +44,8 @@ public class Client {
             return;
         }
         try (Socket clientSocket = new Socket(serverHost, port);
-             PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-             BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))) {
+             BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream(), StandardCharsets.UTF_8));
+             PrintWriter out = new PrintWriter(new OutputStreamWriter(clientSocket.getOutputStream(), StandardCharsets.UTF_8), true);) {
             Logger.log("Клиент в сети", LogStatus.INFO);
             serverTrackingTread(in);
             sendMessage(out);
@@ -60,6 +58,7 @@ public class Client {
     private void sendMessage(PrintWriter out) throws IOException {
         String inputStr;
         Scanner reader = new Scanner(System.in);
+        //Scanner reader = new Scanner(System.in,  "cp866"); //ДЛЯ РУССКОГО В КОНСОЛИ!!!!
         while ((inputStr = reader.nextLine()) != null) {
             if (inputStr.equalsIgnoreCase(EXIT_COM)) {
                 break;

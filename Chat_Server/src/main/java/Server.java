@@ -2,17 +2,49 @@
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Server {
 
     private final String INI_FILE = "settings.ini";
     private final String PORT_STRING = "port:";
-    private final Map clients = new HashMap<String, OnLineClient>();
+    private static final Map clients = new HashMap<String, OnLineClient>();
+    private static final char PERSONAL_CHAR = '@';
 
     public Server() {
 
+    }
+
+    public void start() throws IOException {
+        int port = getPort();
+        if (port == 0) {
+            Logger.log("Ошибка загрузки параметров!", LogStatus.ERROR);
+            return;
+        }
+
+        try (ServerSocket serverSocket = new ServerSocket(port)) {
+
+            Logger.log("Сервер запущен.", LogStatus.INFO);
+            while (true) {
+                Socket clientSocket = serverSocket.accept();
+                Logger.log("Новое подключение: " + clientSocket, LogStatus.INFO);
+
+                OnLineClient newClient = new OnLineClient(clientSocket);
+
+                new Thread(newClient).start();
+            }
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+    }
+
+    public static void addInClientMap(String clientName, OnLineClient newClient) {
+        clients.put(clientName, newClient);
     }
 
     private int getPort() {
@@ -25,41 +57,52 @@ public class Server {
         return port;
     }
 
-    public static void sendAllCome(String msg, OnLineClient sender) {
-
+    public static Map getClients() {
+        return clients;
     }
 
-    public void start() throws IOException {
-        int port = getPort();
-        if (port == 0) {
-            Logger.log("Ошибка загрузки параметров!", LogStatus.ERROR);
-            return;
+    private static boolean chekSendPrivate(String msg, OnLineClient sender) throws IOException {
+
+        for (Object key : clients.keySet()) {
+            String nameForSearch = PERSONAL_CHAR + (String) key;
+
+            if (msg.substring(0, nameForSearch.length()).equalsIgnoreCase(nameForSearch)) {
+                OnLineClient currentClient = (OnLineClient) clients.get(key);
+                Logger.log("Отправка личного сообщения " + sender + " -> " + currentClient, LogStatus.INFO);
+                currentClient.sendPersonalMessage(sender.getName() + ": " + msg);
+                return true;
+            }
         }
 
-        try (ServerSocket serverSocket = new ServerSocket(port)) {
-            Logger.log("Сервер запущен.", LogStatus.INFO);
-            while (true) {
-                Socket clientSocket = serverSocket.accept();
-                Logger.log("Новое подключение: " + clientSocket, LogStatus.INFO);
+        return false;
+    }
 
-                OnLineClient newClient = new OnLineClient(clientSocket);
-                String clientName;
-                while (true) {
-                    clientName = newClient.enterName();
-                    if (clients.containsKey(clientName)) {
-                        newClient.sendPersonalMessage("Такое имя уже занято...");
-                    }else{
-                        break;
-                    }
-                }
-                System.out.println("Новый клиент " + clientName);
-                clients.put(clientName, newClient);
-                new Thread(newClient).start();
+    public static void sendAllCome(String msg, OnLineClient sender) throws IOException {
+
+        if (msg.charAt(0) == PERSONAL_CHAR) {
+            if (chekSendPrivate(msg, sender)) {
+                return;
+            }
+        }
+
+        Logger.log("Отправка сообщения всем от " + sender.getName(), LogStatus.SEND);
+        List onDelete = new ArrayList();
+        for (Object key : clients.keySet()) {
+            OnLineClient currentClient = (OnLineClient) clients.get(key);
+            if (currentClient != sender) {
+                currentClient.sendPersonalMessage(sender.getName() + ": " + msg);
             }
 
-        } catch (Exception ex) {
-            ex.printStackTrace();
+            if (!currentClient.getOnline()) {
+                onDelete.add((String) key);
+            }
         }
 
+        if (onDelete.size()>0){
+            for (Object currentKey : onDelete){
+                clients.remove(currentKey);
+            }
+        }
     }
+
 }
