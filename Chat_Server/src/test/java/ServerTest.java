@@ -2,7 +2,11 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.shadow.com.univocity.parsers.annotations.Nested;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.MockitoAnnotations;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -10,6 +14,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 public class ServerTest {
 
@@ -30,9 +37,11 @@ public class ServerTest {
     private Server mockServer;
 
     private Server server;
+    private final String testUserName = "ТЕСТ";
+    private OnLineClient testClient;
 
     @Test
-    void testServerStart() throws IOException, InterruptedException {
+    void testServerStart()  {
         server = new Server();
 
         Thread trd = new Thread(() -> {
@@ -43,16 +52,24 @@ public class ServerTest {
             }
         });
         trd.start();
-        wait(1000);
-        trd.interrupt();
 
+        trd.interrupt();
     }
 
     @Test
-    void addClientTest() {
+    void addClientTest() throws IOException {
 
-        mockServer.addInClientMap("Петя", mockClient);
-        mockServer.addInClientMap("Петя", mockClient);
+        MockitoAnnotations.openMocks(this);
+        String testName = "TestUser";
+
+        when(mockSocket.getInputStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
+        when(mockSocket.getOutputStream()).thenReturn(new ByteArrayOutputStream());
+        // Act
+        OnLineClient client = new OnLineClient(mockSocket);
+
+        for (int i = 0; i < 5; i++) {
+            mockServer.addInClientMap(testName, client);
+        }
 
         Assertions.assertEquals(1, mockServer.getClients().size());
     }
