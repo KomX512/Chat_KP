@@ -3,31 +3,52 @@ import java.lang.ref.Cleaner;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 public class Client {
     private final String INI_FILE = "settings.ini";
     private final String PORT_STRING = "port:";
     private final String HOST_STRING = "host:";
+    private final String CODEPAGE_STRING = "codepage:";
+
+    private Map <String, String> settings;
     // commands
     private final String EXIT_COM = "/exit";
 
-    public Client() {
-
+    public Client() throws IOException {
+        initSettings(INI_FILE);
     }
 
-    private int getPort() throws IOException {
+    private void initSettings(String iniFile) throws IOException {
+
+        settings = new HashMap<>();
+        settings.put(PORT_STRING, "");
+        settings.put(HOST_STRING, "");
+        settings.put(CODEPAGE_STRING, "");
+
+        Useful.fillSettingFromIni(settings, iniFile);
+    }
+
+    private int getPort() {
         int port = 0;
-        String settingString = Useful.getSettingFromIni(PORT_STRING, INI_FILE);
-        if (settingString == null) {
+
+        String settingString = settings.get(PORT_STRING).trim();
+
+        if (settingString == null || settingString.equals("")) {
             return 0;
         }
         port = Integer.parseInt(settingString);
         return port;
     }
 
-    private String getHost() throws IOException {
-        return Useful.getSettingFromIni(HOST_STRING, INI_FILE);
+    private String getHost() {
+        return settings.get(HOST_STRING).trim();
+    }
+
+    private  String getCodepage (){
+        return settings.get(CODEPAGE_STRING).trim();
     }
 
     void start() throws IOException {
@@ -57,8 +78,13 @@ public class Client {
 
     private void sendMessage(PrintWriter out) throws IOException {
         String inputStr;
-        Scanner reader = new Scanner(System.in);
-        //Scanner reader = new Scanner(System.in,  "cp866"); //ДЛЯ РУССКОГО В КОНСОЛИ!!!!
+        String codePage = getCodepage();
+        Scanner reader;
+        if (codePage.equals("")) {
+            reader = new Scanner(System.in);
+        }else {
+            reader = new Scanner(System.in, codePage); //ДЛЯ РУССКОГО В КОНСОЛИ!!!!
+        }
         while ((inputStr = reader.nextLine()) != null) {
             if (inputStr.equalsIgnoreCase(EXIT_COM)) {
                 break;
