@@ -13,7 +13,7 @@ public class Client {
     private final String HOST_STRING = "host:";
     private final String CODEPAGE_STRING = "codepage:";
 
-    private Map <String, String> settings;
+    private Map<String, String> settings;
     // commands
     private final String EXIT_COM = "/exit";
 
@@ -47,7 +47,7 @@ public class Client {
         return settings.get(HOST_STRING).trim();
     }
 
-    private  String getCodepage (){
+    private String getCodepage() {
         return settings.get(CODEPAGE_STRING).trim();
     }
 
@@ -80,11 +80,17 @@ public class Client {
         String inputStr;
         String codePage = getCodepage();
         Scanner reader;
-        if (codePage.equals("")) {
-            reader = new Scanner(System.in);
-        }else {
-            reader = new Scanner(System.in, codePage); //ДЛЯ РУССКОГО В КОНСОЛИ!!!!
+        try {
+            if (codePage.equals("")) {
+                reader = new Scanner(System.in);
+            } else {
+                reader = new Scanner(System.in, codePage); //ДЛЯ РУССКОГО В КОНСОЛИ!!!!
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return;
         }
+
         while ((inputStr = reader.nextLine()) != null) {
             if (inputStr.equalsIgnoreCase(EXIT_COM)) {
                 break;

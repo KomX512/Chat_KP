@@ -19,7 +19,7 @@ public class UsefulTest {
         return Stream.of(
                 Arguments.of(PORT_STRING, "3456"),
                 Arguments.of(HOST_STRING, "127.0.0.1"),
-                Arguments.of(CODEPAGE_STRING, "сp866")
+                Arguments.of(CODEPAGE_STRING, "cp866")
                 );
     }
 

@@ -3,15 +3,14 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Server {
 
     private final String INI_FILE = "settings.ini";
     private final String PORT_STRING = "port:";
-    private static final Map clients = new HashMap<String, OnLineClient>();
+    private static final ConcurrentHashMap clients = new ConcurrentHashMap<String, OnLineClient>();
     private static final char PERSONAL_CHAR = '@';
 
     public Server() {
@@ -44,7 +43,7 @@ public class Server {
     }
 
     public static void addInClientMap(String clientName, OnLineClient newClient) {
-        clients.put(clientName, newClient);
+            clients.put(clientName, newClient);
     }
 
     private int getPort() {
@@ -57,7 +56,7 @@ public class Server {
         return port;
     }
 
-    public static Map getClients() {
+    public static ConcurrentHashMap getClients() {
         return clients;
     }
 
